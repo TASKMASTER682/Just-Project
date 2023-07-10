@@ -5,14 +5,19 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const connectDB = require('./db');
 const cron=require('node-cron');
-const orders=require('./controllers/order')
-
-
-const authRoutes = require('./routes/auth');
 const orderRoutes = require('./routes/order');
 const deliveryBoyRoutes = require('./routes/deliveryBoy');
 const customerRoutes = require('./routes/customer');
-// const { createOrders}=require('./controllers/order')
+const orders=require('./controllers/order')
+
+
+
+let port=null
+if(process.env.Environment==='development'){
+    port=8000
+}else{
+    port=process.env.PORT
+}
 
 const app = express();
 
@@ -30,12 +35,9 @@ process.setMaxListeners(Infinity);
 app.use('/api', orderRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', deliveryBoyRoutes);
-app.use('/api', authRoutes);
 
 
-// cron.schedule('0 0 * * *', orders.createOrders);
-// orders.createOrders();
+cron.schedule('0 0 * * *', orders.createOrders);
 
 
-const port = 8000;
 app.listen(port, () => { console.log(`server is running on port ${port}`) });

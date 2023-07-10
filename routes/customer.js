@@ -1,28 +1,16 @@
 const express=require('express');
 const router=express.Router();
 
-const {createCustomer,updateCustomer,getAllCustomers,customerOrderHistory} =require('../controllers/customers');
-// const { requireSignin, adminMiddleware} = require('../controllers/auth');
+const {createCustomer,updateCustomer,getAllCustomers,customerOrderHistory,getCustomer,deletCustomers} =require('../controllers/customers');
 
 router.post('/createCustomer',createCustomer);
-router.put('/updateCustomer/:id',updateCustomer);
+router.put('/updateCustomer/:customerId',updateCustomer);
 router.get('/getAllCustomers',getAllCustomers);
+router.get('/getCustomer/:customerId',getCustomer);
 router.get('/orderHistory/:customerId',customerOrderHistory);
+router.delete('/deleteCustomers',deletCustomers);
 
 
-// requireSignin,adminMiddleware,
-
-// const {signup,signin,signout,forgotPassword, resetPassword,preSignup}=require('../controllers/auth');
-
-// const {runValidation}=require('../validators');
-// const {userSignupValidator,userSigninValidator, forgotPasswordValidator,resetPasswordValidator}=require('../validators/auth')
-
-// router.post('/pre-signup', userSignupValidator, runValidation, preSignup);
-// router.post('/signup',signup);
-// router.post('/signin',userSigninValidator,runValidation,signin);
-// router.get('/signout',signout);
-// router.put('/forgot-password', forgotPasswordValidator, runValidation, forgotPassword);
-// router.put('/reset-password', resetPasswordValidator, runValidation, resetPassword);
 
 
 module.exports=router;

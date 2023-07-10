@@ -48,7 +48,12 @@ const customerSchema=new mongoose.Schema({
     subscriptionEnd: {
         type: Date,
         // required:true
-
+      },
+      price:{
+        type:Number
+      },
+      rsub:{
+        type:Number,
       },
  
     pincode:{

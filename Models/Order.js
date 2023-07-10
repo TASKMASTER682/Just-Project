@@ -15,6 +15,9 @@ const orderSchema = new mongoose.Schema({
       type:Number,
       required: true
     },
+    address:{
+      type:String
+    },
     mealType: {
         type: String,
         enum: ['dinner', 'lunch'],
@@ -25,6 +28,9 @@ const orderSchema = new mongoose.Schema({
       },
     price:{
       type:Number,
+    },
+    deliveryMan:{
+      type:String
     },
     delivered:{
       type:Boolean,

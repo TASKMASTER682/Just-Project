@@ -1,11 +1,11 @@
 const Customer=require('../Models/Customer')
 const DeliveryBoy=require('../Models/DeliveryBoy');
 const Order =require('../Models/Order');
-const {subMonths}=require('date-fns');
+const {subMonths,format}=require('date-fns');
 
 exports.createCustomer=async (req,res)=>{
 
-    const { name,address,phone,email,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins, lunchTiffins,pincode,deliveryBoy } = req.body;
+    const { name,address,phone,email,subscription,subscriptionStart,price, subscriptionEnd, dinnerTiffins, lunchTiffins,pincode,deliveryBoy } = req.body;
 
 
     try {
@@ -19,7 +19,8 @@ exports.createCustomer=async (req,res)=>{
             if (!assignedDeliveryBoy) {
                 return res.status(404).json({ error: 'Delivery boy not found' });
               }
-            const customer = new Customer({ name,address,phone,email,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
+              const subsAmount=subscription;
+            const customer = new Customer({ name,address,phone,email,price,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins,rsub:subsAmount, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
             await customer.save();
             // const data = await response.json();
 
@@ -28,15 +29,14 @@ exports.createCustomer=async (req,res)=>{
     } catch (error) {
         res.status(500).json({ error: 'Failed to create customer' });
         res.json(req.body);
-
     }
 }
 exports.updateCustomer=async (req,res)=>{
     try {
-        const customerId = req.params.id;
-        const updatedCustomer = req.body;
+        const customerId = req.params.customerId;
+        const customer = req.body;
     
-        const result = await Customer.findByIdAndUpdate(customerId, updatedCustomer, { new: true });
+        const result = await Customer.findByIdAndUpdate(customerId, customer, { new: true });
     
         res.json(result);
       } catch (error) {
@@ -47,12 +47,22 @@ exports.updateCustomer=async (req,res)=>{
 
 exports.getAllCustomers=async (req,res)=>{
     try {
-        const customers = await Customer.find().sort(-1);
+        const customers = await Customer.find({});
         res.json(customers);
       } catch (error) {
         console.log('Failed to fetch customers:', error);
         res.status(500).json({ error: 'Failed to fetch customers' });
       }
+}
+exports.getCustomer=async (req,res)=>{
+  try {
+    const {customerId}=req.params;
+      const customer = await Customer.findById(customerId)
+      res.json(customer);
+    } catch (error) {
+      console.log('Failed to fetch customers:', error);
+      res.status(500).json({ error: 'Failed to fetch customers' });
+    }
 }
 
 exports.customerOrderHistory=async (req,res)=>{
@@ -70,27 +80,45 @@ exports.customerOrderHistory=async (req,res)=>{
     }
 
     // Find all orders for the customer
-    const orders = await Order.find({customerId});
+    const orders = await Order.find({ customerId });
+
     // Prepare the response data
-    const orderHistory = orders.map((order,key) => (
-      
-       { 
-        orderDate: order.createdAt,
-        name:order.customerName,
+    const orderHistory = [];
+    orders.forEach((order) => {
+      orderHistory.push({
+        orderDate:format(order.createdAt, 'dd MMM YYY') ,
+        name: order.customerName,
         isCancelled: order.isCancelled,
-        newMeal:order.mealType,
-        deliveryStatus: order.delivered ,
-        lunches:customer.lunchTiffins,
-        dinners:customer.dinnerTiffins,
-        orderId:order._id,
-        subscription:customer.subscription
-       }
-    ));
+        newMeal: order.mealType,
+        deliveryStatus: order.delivered,
+        tiffins:order.mealType==='lunch'? customer.lunchTiffins : customer.dinnerTiffins,
+        orderId: order._id,
+        total:order.total,
+        subscription: customer.subscription,
+        price:customer.price,
+        rsub:customer.rsub
+      });
+    });
+
     // Send the order history as the API response
-    res.json(orderHistory);
+    res.json({orderHistory});
+    // console.log(orderHistory);
   } catch (error) {
     console.error('Failed to fetch order history:', error);
     res.status(500).json({ error: 'Failed to fetch order history' });
+  }
+
+ 
+}
+
+exports.deletCustomers=async (req,res)=>{
+  try {
+    // Delete all orders from the database
+    await Customer.deleteMany();
+
+    res.status(200).json({ message: 'All Customers have been deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete orders' });
   }
 }
 

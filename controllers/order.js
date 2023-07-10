@@ -2,27 +2,9 @@ const Order=require('../Models/Order');
 const Customer=require('../Models/Customer');
 const {startOfDay,endOfDay} =require('date-fns')
 
-// exports.createOrder=async (req,res)=>{
-//     try {
-//         const { customerId, dinner,lunch,total } = req.body;
-//         const customer = await Customer.findById(customerId);
-//         if (!customer) {
-//           return res.status(404).json({ error: 'Customer not found' });
-//         }
-//         const order = new Order({ customerId, dinner,lunch,total });
-//         await order.save();
-//         res.status(201).json(order);
-//     } catch (error) {
-//         res.status(500).json({ error: 'Failed to create order' });
 
-//     }
-// }
-const today = new Date();
-const startOfToday = startOfDay(today);
-const endOfToday = endOfDay(today);
 
 exports.createOrders=async ()=>{
-    // const { customerId, subscriptionStartDate, subscriptionEndDate } = req.body;
  
     try {
         // Find the customer
@@ -30,6 +12,7 @@ exports.createOrders=async ()=>{
         const customers = await Customer.find({
           subscriptionStart: { $lte: today },
           subscriptionEnd: { $gte: today },
+          rsub:{$gt:0}
         });
     // Create orders for each subscribed customer
     for (customer of customers) {
@@ -38,16 +21,18 @@ exports.createOrders=async ()=>{
         // then create
           
         // }
-        const price=60;
         const dinnerOrder = new Order({
           customerId: customer._id,
           customerName:customer.name,
           customerPhone:customer.phone,
+          address:customer.address,
           orderDate: today,
           mealType: 'dinner',
-          total:customer.dinnerTiffins * price,
+          deliveryMan:customer.deliveryBoy.name,
+          total:customer.dinnerTiffins *(customer.price),
           isCancelled: false,
         });
+        
 
         const lunchOrder = new Order({
           customerId: customer._id,
@@ -55,14 +40,32 @@ exports.createOrders=async ()=>{
           customerPhone:customer.phone,
           orderDate: today,
           mealType: 'lunch',
-          total:customer.lunchTiffins * price,
+          address:customer.address,
+          deliveryMan:customer.deliveryBoy.name,
+          total:customer.lunchTiffins * (customer.price),
           isCancelled: false,
         });
 
-        await dinnerOrder.save();
-        await lunchOrder.save();
+        if(customer.rsub<=0){
+          console.log('Your lunch cannot be completed');
+
+        }else{
+          await lunchOrder.save();
+          customer.rsub=customer.rsub-lunchOrder.total
+          await customer.save();
+        }
+
+        if(customer.rsub<=0){
+          console.log('Your dinner cannot be completed')
+
+        }else{
+          await dinnerOrder.save();
+          console.log('order craeted')
+          customer.rsub=customer.rsub-dinnerOrder.total
+          await customer.save();
+        }
+
         // res.status(201).json(lunchOrder);
-        console.log('order craeted')
        
 
 }
@@ -73,25 +76,6 @@ exports.createOrders=async ()=>{
       }
 }
 
-// exports.inactiveOrders=async ()=>{
-//   try {
-//     // Find the orders that are not cancelled and have been created 23 hours ago
-//     const ordersToUpdate = await Order.find({
-//       isCancelled: false,
-//       createdAt: { $lte: new Date(Date.now() - 23 * 60 * 60 * 1000) },
-//     });
-
-//     // Update the orders and set isCancelled to true
-//     await Order.updateMany(
-//       { _id: { $in: ordersToUpdate.map((order) => order._id) } },
-//       { $set: { isCancelled: true } }
-//     );
-
-//     console.log('Orders cancelled successfully.');
-//   } catch (error) {
-//     console.error('Error cancelling orders:', error);
-//   }
-// }
 
 exports.cancelOrder=async (req,res)=>{
     
@@ -123,6 +107,8 @@ exports.cancelOrder=async (req,res)=>{
       }
   
       // Cancel the order
+      customer.rsub=customer.rsub+order.total
+      customer.save();
       order.isCancelled = true;
       await order.save();
   
@@ -137,8 +123,7 @@ exports.cancelOrder=async (req,res)=>{
 exports.getAllDinnerOrders=async (req,res)=>{
   try {
     // Retrieve all orders from the database
-    const orders = await Order.find({ isCancelled:false,mealType:'dinner'});
-    // createdAt: { $gte: startOfToday, $lte: endOfToday },
+    const orders = await Order.find({ isCancelled:false,mealType:'dinner',createdAt: { $gte: startOfToday, $lte: endOfToday }});
     res.status(200).json({ orders });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -146,8 +131,7 @@ exports.getAllDinnerOrders=async (req,res)=>{
 }
 exports.getAllLunchOrders=async (req,res)=>{
   try {
-    // Retrieve all orders from the database
-    const orders = await Order.find({ isCancelled:false,mealType:'lunch'});
+    const orders = await Order.find({ isCancelled:false,mealType:'lunch',createdAt: { $gte: startOfToday, $lte: endOfToday }});
     // createdAt: { $gte: startOfToday, $lte: endOfToday },
     res.status(200).json({ orders });
   } catch (error) {
@@ -166,28 +150,7 @@ exports.deleteOrders=async (req,res)=>{
     res.status(500).json({ error: 'Failed to delete orders' });
   }
 }
-// const customer = await Customer.findById(customerId);
-    
-// // Create daily dinner and lunch orders for the subscribed period
-// const orders = [];
-// const currentDate = new Date(subscriptionStartDate);
-// const endDate = new Date(subscriptionEndDate);
-// while (currentDate <= endDate) {
-//   // Check if the order is not cancelled for the current date
-//   if (!customer.cancellations.includes(currentDate.toISOString().split('T')[0])) {
-//       const order = new Order({
-//       customer: customer._id,
-//       date: currentDate,
-//       // Set other order details...
-//     });
-//     orders.push(await order.save());
-//   }
-//   currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
-// }
 
-// res.status(201).json({ orders });
-
-//list All orders with details of customer
 
 
 exports.orderDelivery=async (req,res)=>{
