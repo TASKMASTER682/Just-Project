@@ -1,8 +1,9 @@
 const Order=require('../Models/Order');
 const Customer=require('../Models/Customer');
-const {startOfDay,endOfDay} =require('date-fns')
+// const {startOfDay,endOfDay} =require('date-fns')
 
-
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
 exports.createOrders=async ()=>{
  
@@ -12,7 +13,7 @@ exports.createOrders=async ()=>{
         const customers = await Customer.find({
           subscriptionStart: { $lte: today },
           subscriptionEnd: { $gte: today },
-          rsub:{$gt:0}
+          rsub:{$gte:0}
         });
     // Create orders for each subscribed customer
     for (customer of customers) {
@@ -46,23 +47,25 @@ exports.createOrders=async ()=>{
           isCancelled: false,
         });
 
-        if(customer.rsub<=0){
-          console.log('Your lunch cannot be completed');
-
-        }else{
+        if(customer.rsub>=0){
           await lunchOrder.save();
           customer.rsub=customer.rsub-lunchOrder.total
           await customer.save();
-        }
-
-        if(customer.rsub<=0){
-          console.log('Your dinner cannot be completed')
 
         }else{
+
+          console.log('Your lunch cannot be completed');
+
+        }
+
+        if(customer.rsub>=0){
           await dinnerOrder.save();
           console.log('order craeted')
           customer.rsub=customer.rsub-dinnerOrder.total
           await customer.save();
+        }else{
+          console.log('Your dinner cannot be completed')
+
         }
 
         // res.status(201).json(lunchOrder);
@@ -123,7 +126,7 @@ exports.cancelOrder=async (req,res)=>{
 exports.getAllDinnerOrders=async (req,res)=>{
   try {
     // Retrieve all orders from the database
-    const orders = await Order.find({ isCancelled:false,mealType:'dinner',createdAt: { $gte: startOfToday, $lte: endOfToday }});
+    const orders = await Order.find({ isCancelled:false,mealType:'dinner',createdAt: { $gte:today }});
     res.status(200).json({ orders });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -131,11 +134,12 @@ exports.getAllDinnerOrders=async (req,res)=>{
 }
 exports.getAllLunchOrders=async (req,res)=>{
   try {
-    const orders = await Order.find({ isCancelled:false,mealType:'lunch',createdAt: { $gte: startOfToday, $lte: endOfToday }});
+    const orders = await Order.find({ isCancelled:false,mealType:'lunch',createdAt: { $gte:today }});
     // createdAt: { $gte: startOfToday, $lte: endOfToday },
     res.status(200).json({ orders });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch orders' });
+    console.log(error)
   }
 }
 

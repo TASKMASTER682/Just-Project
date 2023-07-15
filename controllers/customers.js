@@ -19,8 +19,7 @@ exports.createCustomer=async (req,res)=>{
             if (!assignedDeliveryBoy) {
                 return res.status(404).json({ error: 'Delivery boy not found' });
               }
-              const subsAmount=subscription;
-            const customer = new Customer({ name,address,phone,email,price,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins,rsub:subsAmount, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
+            const customer = new Customer({ name,address,phone,email,price,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins,rsub:subscription, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
             await customer.save();
             // const data = await response.json();
 

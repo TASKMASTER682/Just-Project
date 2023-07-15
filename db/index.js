@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 // const config=require("config");
-const db='mongodb+srv://stupro:08522@cluster0.ttzn4ag.mongodb.net/?retryWrites=true&w=majority'
+const db=process.env.DB
 
 
 const connectDB=async() => {
