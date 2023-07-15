@@ -17,7 +17,7 @@ let port=8000
 
 const app = express();
 // origin:'http://localhost:3000' 
-app.use(cors({origin:'https://app-experiment-two.vercel.app/'}));
+app.use(cors({origin:'https://app-experiment-two.vercel.app'}));
 connectDB();
 app.use(express.json({ limit: '100mb', extended: true }));
 app.use(cookieParser());
