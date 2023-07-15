@@ -17,7 +17,7 @@ let port=8000
 
 const app = express();
 // origin:'http://localhost:3000' 
-app.use(cors({}));
+app.use(cors({origin:'https://tiff-taste.vercel.app'}));
 connectDB();
 app.use(express.json({ limit: '100mb', extended: true }));
 app.use(cookieParser());
