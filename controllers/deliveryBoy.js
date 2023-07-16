@@ -84,7 +84,6 @@ exports.getDeliveryBoys=async (req,res)=>{
 }
 exports.getSingleBoy=async (req,res)=>{
     const {deliveryId}=req.params;
-    const currentDate = new Date().toISOString().split('T')[0];
 
 
     try {
@@ -104,8 +103,8 @@ exports.getSingleBoy=async (req,res)=>{
         // Find the orders for the customer IDs and current date
         const deliveryBoyOrders = await Order.find({
           customerId: { $in: customerIds },
-        //   orderDate: currentDate,
-          isCancelled: false
+          isCancelled: false,
+          delivered:false
         });
     
         res.json(deliveryBoyOrders);
