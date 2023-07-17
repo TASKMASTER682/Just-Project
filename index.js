@@ -32,7 +32,7 @@ app.use('/api', orderRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', deliveryBoyRoutes);
 
-cron.schedule('0 0 * * *', orders.createOrders);
+cron.schedule('0 0 * * *', orders.createOrders());
 
 
 app.listen(port, () => { console.log(`server is running on port ${port}`) });
