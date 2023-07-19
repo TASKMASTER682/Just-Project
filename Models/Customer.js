@@ -12,9 +12,7 @@ const customerSchema=new mongoose.Schema({
     },
     email:{
       type:String,
-      trim:true,
-      max:32,
-      lowercase:true,
+
   },
     address:{
         type:String,
@@ -63,7 +61,6 @@ const customerSchema=new mongoose.Schema({
 },{timestamps:true}
 );
 module.exports=mongoose.model('Customer',customerSchema);
-
 // userSchema.virtual('password')
 //      .set(function(password){
 //          //create a temporarity variable called _password

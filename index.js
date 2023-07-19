@@ -17,6 +17,7 @@ let port=8000
 
 const app = express();
 // origin:'http://localhost:3000' 
+//https://app-experiment-two.vercel.app
 app.use(cors({origin:'https://app-experiment-two.vercel.app'}));
 connectDB();
 app.use(express.json({ limit: '100mb', extended: true }));
@@ -32,7 +33,7 @@ app.use('/api', orderRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', deliveryBoyRoutes);
 
-cron.schedule('0 0 * * *', () => {orders.createOrders()});
+// cron.schedule('0 0 * * *', () => {orders.createOrders()});
 
 
 app.listen(port, () => { console.log(`server is running on port ${port}`) });

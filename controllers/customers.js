@@ -2,33 +2,32 @@ const Customer=require('../Models/Customer')
 const DeliveryBoy=require('../Models/DeliveryBoy');
 const Order =require('../Models/Order');
 const {subMonths,format}=require('date-fns');
-
 exports.createCustomer=async (req,res)=>{
 
-    const { name,address,phone,email,subscription,subscriptionStart,price, subscriptionEnd, dinnerTiffins, lunchTiffins,pincode,deliveryBoy } = req.body;
+  const { name,address,phone,email,subscription,subscriptionStart,price, subscriptionEnd, dinnerTiffins, lunchTiffins,pincode,deliveryBoy } = req.body;
 
 
-    try {
-        const userExist =await Customer.findOne({phone:phone});
-        const assignedDeliveryBoy = await DeliveryBoy.findById(deliveryBoy);
+  try {
+      const userExist =await Customer.findOne({phone:phone});
+      const assignedDeliveryBoy = await DeliveryBoy.findById(deliveryBoy);
 
-        if(userExist){
-            res.status(401).json('User with this phone number already exist')
-            console.log('User with this phone number already exist')
-        }else{
-            if (!assignedDeliveryBoy) {
-                return res.status(404).json({ error: 'Delivery boy not found' });
-              }
-            const customer = new Customer({ name,address,phone,email,price,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins,rsub:subscription, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
-            await customer.save();
-            // const data = await response.json();
+      if(userExist){
+          res.status(401).json('User with this phone number already exist')
+          console.log('User with this phone number already exist')
+      }else{
+          if (!assignedDeliveryBoy) {
+               res.status(404).json({ error: 'Delivery boy not found' });
+            }
+          const customer = new Customer({ name,address,phone,email,price,subscription,subscriptionStart, subscriptionEnd, dinnerTiffins,rsub:subscription, lunchTiffins,pincode,deliveryBoy: assignedDeliveryBoy._id});
+          await customer.save();
+          // const data = await response.json();
 
-            res.status(201).json('User Created');
-        }        
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to create customer' });
-        res.json(req.body);
-    }
+          res.status(201).json('User Created');
+      }        
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to create customer' });
+      // res.json(req.body);
+  }
 }
 exports.updateCustomer=async (req,res)=>{
     try {
